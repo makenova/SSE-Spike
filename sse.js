@@ -1,50 +1,51 @@
 var http = require('http');
 var request = require('request');
-var rand = true;
+var fs = require('fs');
 
 var server = http.createServer(function(req, res){
-  if (req.url != '/events') return res.end();
-  res.writeHead(200, { 
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive'
-    'Access-Control-Allow-Origin': '*'
-  });
+  if (req.url === '/events') {
+    res.writeHead(200, { 
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+      'Access-Control-Allow-Origin': '*'
+    });
 
-  // var id = setInterval(function(){
-  //   rand = !rand;
-  //   console.log(rand);
-  //   if (rand){
-  //     res.write('event: poke\n'+ 'data: boo\n\n');
-  //   }else{
-  //     var date = new Date().toLocaleString();
-  //     res.write('data: ' + date.slice(0, date.lastIndexOf(' GMT')) + '\n\n');
-  //   }
-  // }, 1000);
+    var id = setInterval(function () {
+      request('http://www.iheartquotes.com/api/v1/random', function (err, response, body) {
+        if (err || response.statusCode !==200)
+          throw err;
+        chunkify(body, function (lines){
+          res.write('event: quote\n');
+          lines.forEach(function (line) {
+            res.write('data: ' + line + '\n');
+          });
+          res.write('\n\n')
+        })
+      })
+    }, 15000);
 
-  var id = setInterval(function () {
-    request('http://www.iheartquotes.com/api/v1/random', function (err, response, body) {
-      if (err || response.statusCode !==200)
-        throw err;
-      console.log(body);
-      res.write('data: ' + JSON.stringify(body) + '\n\n');
-    })
-  }, 30000)
-
-  req.on('end', function(){
-    clearInterval(id);
-  });
+    req.on('end', function(){
+      clearInterval(id);
+    });
+  } else if (req.url === '/index'){
+    return fs.readFile('./sseClient.html', function (err, file) {
+      res.writeHead(200, {
+        'Content-Type': 'text/html'
+      });
+      res.end(file);
+    });
+  }
 });
 
 /*
-* Break a string into newlines so it can be streamed via SSE. If the stringBlob
-* does not contain any new lines, it is returned as is.
+* Break a string into newlines so it can be streamed via SSE.
 * Arguments:
 * stringBlob    a string that possibly contains new lines '\n'
-* callback    invoked for every line of the stringBlob takes the argument (line)
+* callback    invoked on the array of lines
 */
-function chunkify (stringBlob) {
-  callback(blob.split('\n'));
+function chunkify (stringBlob, callback) {
+  callback(stringBlob.split('\n'));
 }
 
 server.listen(3000);

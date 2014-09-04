@@ -19,16 +19,16 @@
 		es.addEventListener('error', function (e) {
 			console.log('connection was closed');
 		});
-		es.addEventListener('poke', function (e) {
-			console.log('poke SSE', e.data);
+		es.addEventListener('quote', function (e) {
+			console.log('quote:', e.data);
+			var resultElem = document.getElementById('result');
+			// var testNode = document.createTextNode(e.data.replace(/\n/g, '<br>'));
+			// resultElem.appendChild(testNode);
+			resultElem.innerHTML = e.data.replace(/\n/g, '<br>');
+
 		});
-		function htmlDecode(input){
-		  var e = document.createElement('div');
-		  e.innerHTML = input;
-		  return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
-		}
 	</script>
-	<script src="./eventSourcePoly.js.js"></script>
-	<!-- <script src="./eventSource.min.js"></script> -->
+	<!-- <script src="./sseRemyPoly.js.js"></script>
+	<script src="./eventSource.min.js"></script> -->
 </body>
 </html>
