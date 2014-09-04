@@ -4,14 +4,11 @@
 	<title>SSE</title>
 </head>
 <body>
-	<div id="result"></div>
+	<div id="result">Quote coming in 15 seconds</div>
 	<script>
 		var es = new EventSource('http://localhost:3000/events');
 		es.onmessage = function(e){
-			var resultElem = document.getElementById('result');
-			var testNode = document.createTextNode(e.data);
-			resultElem.appendChild(testNode);
-		  console.log(e.data, e);
+			displayMessage(e);
 		};
 		es.addEventListener('open', function (e) {
 			console.log('connection was opened');
@@ -20,13 +17,12 @@
 			console.log('connection was closed');
 		});
 		es.addEventListener('quote', function (e) {
-			console.log('quote:', e.data);
-			var resultElem = document.getElementById('result');
-			// var testNode = document.createTextNode(e.data.replace(/\n/g, '<br>'));
-			// resultElem.appendChild(testNode);
-			resultElem.innerHTML = e.data.replace(/\n/g, '<br>');
-
+			displayMessage(e);
 		});
+		function displayMessage (event) {
+			var resultElem = document.getElementById('result');
+			resultElem.innerHTML = event.data.replace(/\n/g, '<br>');
+		}
 	</script>
 	<!-- <script src="./sseRemyPoly.js.js"></script>
 	<script src="./eventSource.min.js"></script> -->
