@@ -4,7 +4,7 @@
 	<title>SSE</title>
 </head>
 <body>
-	<div id="result">Quote coming in 15 seconds</div>
+	<div id="result"></div>
 	<script>
 		var es = new EventSource('http://localhost:3000/events');
 		es.onmessage = function(e){

@@ -2,32 +2,9 @@ var http = require('http');
 var request = require('request');
 var fs = require('fs');
 
-var server = http.createServer(function(req, res){
+http.createServer(function(req, res){
   if (req.url === '/events') {
-    res.writeHead(200, { 
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
-      'Access-Control-Allow-Origin': '*'
-    });
-
-    var id = setInterval(function () {
-      request('http://www.iheartquotes.com/api/v1/random', function (err, response, body) {
-        if (err || response.statusCode !==200)
-          throw err;
-        chunkify(body, function (lines){
-          res.write('event: quote\n');
-          lines.forEach(function (line) {
-            res.write('data: ' + line + '\n');
-          });
-          res.write('\n\n')
-        })
-      })
-    }, 15000);
-
-    req.on('end', function(){
-      clearInterval(id);
-    });
+    sseHandler(req, res);
   } else if (req.url === '/index'){
     return fs.readFile('./sseClient.html', function (err, file) {
       res.writeHead(200, {
@@ -36,16 +13,44 @@ var server = http.createServer(function(req, res){
       res.end(file);
     });
   }
-});
+}).listen(3000);
 
 /*
-* Break a string into newlines so it can be streamed via SSE.
+* Establish a connection to clients.
 * Arguments:
-* stringBlob    a string that possibly contains new lines '\n'
-* callback    invoked on the array of lines
+* req    the http request object
+* res    the http response object
 */
-function chunkify (stringBlob, callback) {
-  callback(stringBlob.split('\n'));
+function sseHandler (req, res) {
+  res.writeHead(200, { 
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'Access-Control-Allow-Origin': '*'
+  });
+
+  fetchSendQuote(res);
+  var id = setInterval(fetchSendQuote, 15000, res);
+
+  req.on('end', function(){
+    console.log('client ' + id + ' disconnected');
+    clearInterval(id);
+  });
 }
 
-server.listen(3000);
+/*
+* Fetch random quote and stream it to the client.
+* Arguments:
+* res    the http response object
+*/
+function fetchSendQuote (res) {
+  request('http://www.iheartquotes.com/api/v1/random', function (err, response, body) {
+    if (err || response.statusCode !==200)
+      throw err;
+    res.write('event: quote\n');
+    body.split('\n').forEach(function (line) {
+      res.write('data: ' + line + '\n');
+    });
+    res.write('\n\n');
+  });
+}

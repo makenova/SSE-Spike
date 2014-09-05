@@ -1,0 +1,22 @@
+{
+  "name": "SSE-Spike",
+  "version": "0.0.1",
+  "description": "Server-Sent Events Spike",
+  "main": "sse.js",
+  "dependencies": {
+    "request": "^2.40.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/makenova/SSE-Spike.git"
+  },
+  "author": "makenova",
+  "bugs": {
+    "url": "https://github.com/makenova/SSE-Spike/issues"
+  },
+  "homepage": "https://github.com/makenova/SSE-Spike"
+}
